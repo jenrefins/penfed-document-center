@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PenFed Document Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: white;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e4a72, #2d5aa0);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-align: left;
+        }
+        
+        .header-left {
+            flex: 1;
+            max-width: 60%;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            gap: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .avatar-circle {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .user-text {
+            color: white;
+        }
+        
+        .welcome-line {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        
+        .member-line {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .history-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .history-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .member-context {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #1e4a72;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffecb5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .alert-icon {
+            width: 24px;
+            height: 24px;
+            background: #ffc107;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-content strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .alert-details {
+            color: #856404;
+            font-size: 0.95rem;
+        }
+
+        .alert-link {
+            color: #1e4a72;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .alert-link:hover {
+            color: #2d5aa0;
+        }
+
+        .form-item.highlight-target {
+            background: linear-gradient(135deg, #fff9c4, #fef3c7);
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            padding: 18px 16px;
+            margin: -2px 0;
+            animation: highlightPulse 2s ease-in-out;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+        }
+
+        @keyframes highlightPulse {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+            }
+            50% { 
+                transform: scale(1.02);
+                box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+            }
+        }
+
+        .action-areas {
+            display: grid;
+            grid-template-columns: 1fr 2px 1fr;
+            gap: 30px;
+            margin-bottom: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .action-area {
+            text-align: center;
+        }
+
+        .action-divider {
+            width: 2px;
+            height: 120px;
+            background: linear-gradient(to bottom, transparent 0%, #e5e7eb 20%, #e5e7eb 80%, transparent 100%);
+            justify-self: center;
+        }
+
+        .action-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .action-description {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .action-button {
+            background: #1e4a72;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        .action-button:hover {
+            background: #2d5aa0;
+            transform: translateY(-1px);
+        }
+
+        .search-field {
+            width: 100%;
+            max-width: 400px;
+            padding: 14px 50px 14px 18px;
+            border: 1.5px solid #c1c7cd;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            background: #fafbfc;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-field:hover {
+            border-color: #9ca3af;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-field:focus {
+            border-color: #1e4a72;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 74, 114, 0.08), 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            color: #9ca3af;
+            pointer-events: none;
+            transition: color 0.3s ease;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            pointer-events: auto;
+        }
+
+        .search-icon:hover {
+            color: #1e4a72;
+            background-color: rgba(30, 74, 114, 0.08);
+        }
+
+        .search-container:hover .search-icon {
+            color: #6b7280;
+        }
+
+        .search-container:hover .search-icon:hover {
+            color: #1e4a72;
+            background-color: rgba(30, 74, 114, 0.08);
+        }
+
+        .search-field:focus + .search-icon {
+            color: #1e4a72;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f3f4;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-result-title {
+            font-weight: 500;
+            color: #1e4a72;
+            margin-bottom: 2px;
+        }
+
+        .search-result-category {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .search-result-description {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .search-result-urgent {
+            background-color: #fff3cd;
+            border-left: 3px solid #ffc107;
+        }
+
+        .search-result-urgent .search-result-title {
+            color: #856404;
+        }
+
+        .no-results {
+            padding: 16px;
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .process-section {
+            background: linear-gradient(135deg, #f9fbfd 0%, #f1f5f9 100%);
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 40px 0;
+            margin: 30px 0;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .process-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .process-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .process-header p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .categories-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .categories-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .categories-header p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .category-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .category-panel {
+            border-bottom: 1px solid #eee;
+        }
+
+        .category-panel:last-child {
+            border-bottom: none;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .category-header:hover {
+            background-color: #f8f9fa;
+            padding-left: 10px;
+            padding-right: 10px;
+            margin-left: -10px;
+            margin-right: -10px;
+            border-radius: 8px;
+        }
+
+        .category-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 1.2rem;
+        }
+
+        .category-text {
+            flex: 1;
+        }
+
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .category-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .expand-icon {
+            font-size: 1.2rem;
+            color: #666;
+            transition: transform 0.3s ease;
+        }
+
+        .category-panel.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .category-content {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+
+        .category-panel .category-content {
+            display: none;
+        }
+
+        .category-panel.expanded .category-content {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-content-inner {
+            padding: 20px 56px 24px 56px;
+        }
+
+        .form-section {
+            margin-bottom: 28px;
+        }
+        
+        .form-section h4 {
+            color: #374151;
+            font-size: 1.05rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        
+        .form-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f3f4;
+            gap: 16px;
+        }
+        
+        .form-item:last-child {
+            border-bottom: none;
+        }
+        
+        .form-name-wrapper {
+            flex: 1;
+        }
+        
+        .form-name {
+            color: #1e4a72;
+            font-size: 0.95rem;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .form-name:hover {
+            color: #2d5aa0;
+            text-decoration: underline;
+        }
+        
+        .form-description {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            line-height: 1.3;
+            font-weight: 400;
+        }
+        
+        .download-link {
+            color: #1e4a72;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+            flex-shrink: 0;
+        }
+        
+        .download-link:hover {
+            background: #1e4a72;
+            color: white;
+            border-color: #1e4a72;
+        }
+
+        .upload-modal {
+            display: none;
+            position: fixed;
+            z-index: 1100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .upload-modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 580px;
+            max-height: 90vh;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .upload-modal-header {
+            background: white;
+            padding: 32px 32px 24px 32px;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            border-bottom: 1px solid #f1f3f4;
+            flex-shrink: 0;
+        }
+        
+        .upload-modal-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            padding-right: 40px;
+        }
+        
+        .upload-modal-body {
+            padding: 24px 32px 32px 32px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+        
+        .form-input, .form-select {
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: #fafbfc;
+        }
+
+        .form-select {
+            padding-right: 40px;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px 16px;
+            appearance: none;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #1e4a72;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 74, 114, 0.08);
+        }
+        
+        .file-drop-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 16px;
+            padding: 48px 24px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            background: linear-gradient(135deg, #fafbfc, #f3f4f6);
+        }
+        
+        .file-drop-zone:hover {
+            border-color: #1e4a72;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        }
+        
+        .file-drop-zone.dragover {
+            border-color: #1e4a72;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            transform: scale(1.01);
+        }
+        
+        .upload-icon {
+            font-size: 2.5rem;
+            color: #9ca3af;
+            margin-bottom: 16px;
+        }
+        
+        .upload-text {
+            color: #4b5563;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .upload-subtext {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+        
+        .upload-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f1f3f4;
+            flex-shrink: 0;
+            background: white;
+            position: sticky;
+            bottom: 0;
+        }
+        
+        .btn-cancel {
+            background: #f8f9fa;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+        }
+        
+        .btn-cancel:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #1e4a72, #2563eb);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 8px rgba(30, 74, 114, 0.15);
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(30, 74, 114, 0.2);
+        }
+        
+        .modal-close-btn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            font-weight: 400;
+            z-index: 10001;
+        }
+        
+        .modal-close-btn:hover {
+            background: #e9ecef;
+            color: #374151;
+        }
+
+        .upload-counter {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .upload-counter.warning {
+            color: #f59e0b;
+        }
+
+        .upload-counter.limit-reached {
+            color: #dc2626;
+        }
+
+        .file-comment {
+            margin-top: 8px;
+        }
+
+        .file-comment textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 60px;
+            background: #fafbfc;
+            transition: all 0.2s ease;
+        }
+
+        .file-comment textarea:focus {
+            outline: none;
+            border-color: #1e4a72;
+            background: white;
+            box-shadow: 0 0 0 2px rgba(30, 74, 114, 0.08);
+        }
+
+        .file-comment-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .consent-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .consent-label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .consent-checkbox {
+            margin-right: 12px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+        }
+
+        .consent-text {
+            color: #374151;
+        }
+
+        .consent-link {
+            color: #1e4a72;
+            text-decoration: none;
+        }
+
+        .consent-link:hover {
+            text-decoration: underline;
+        }
+
+        .captcha-section {
+            display: flex;
+            justify-content: center;
+        }
+
+        .captcha-box {
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 12px 16px;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 300px;
+            position: relative;
+        }
+
+        .captcha-checkbox {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+        }
+
+        .captcha-label {
+            font-size: 0.95rem;
+            color: #374151;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .captcha-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .recaptcha-text {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .recaptcha-links {
+            font-size: 0.7rem;
+        }
+
+        .recaptcha-link {
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        .recaptcha-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:disabled:hover {
+            background: #d1d5db;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: white;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-date {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .history-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-processing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .history-details {
+            margin-left: 8px;
+        }
+
+        .history-category {
+            font-weight: 500;
+            color: #1e4a72;
+            margin-bottom: 4px;
+        }
+
+        .history-files {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .file-count {
+            font-weight: 500;
+        }
+
+        .file-names {
+            font-style: italic;
+        }
+
+        .history-comment {
+            font-size: 0.9rem;
+            color: #374151;
+            background: #f9fafb;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid #d1d5db;
+            margin-top: 8px;
+        }
+
+        .history-filters {
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .upload-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f3f4;
+            gap: 16px;
+        }
+        
+        .upload-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #1e4a72;
+        }
+        
+        .upload-details {
+            flex: 1;
+        }
+        
+        .upload-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        
+        .upload-meta {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 24px 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            max-width: 480px;
+            min-width: 380px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.hide {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .toast-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .toast-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .action-areas {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .action-divider {
+                display: none;
+            }
+
+            .category-content-inner {
+                padding: 20px;
+            }
+
+            .upload-modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+
+            .upload-modal-body {
+                padding: 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 20px;
+            }
+
+            .header-left p {
+                font-size: 0.95rem;
+            }
+
+            .header-right {
+                justify-content: center;
+                gap: 16px;
+                padding: 14px 18px;
+            }
+
+            .user-info {
+                gap: 12px;
+            }
+
+            .avatar-circle {
+                width: 44px;
+                height: 44px;
+                font-size: 1rem;
+            }
+
+            .welcome-line {
+                font-size: 1rem;
+            }
+
+            .member-line {
+                font-size: 0.85rem;
+            }
+
+            .history-button {
+                font-size: 0.85rem;
+                padding: 8px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>Document Center</h1>
+                    <p>Upload documents securely for your PenFed applications and services</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="avatar-circle">JS</div>
+                        <div class="user-text">
+                            <div class="welcome-line">Welcome back, Jennifer!</div>
+                            <div class="member-line">Member since 2019</div>
+                        </div>
+                    </div>
+                    <a href="#" class="history-button" onclick="openHistoryModal()">View Submission History</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="member-context">
+            <strong>Welcome back, PenFed member!</strong> We've streamlined your experience - your information is ready and waiting to save you time.
+        </div>
+        
+        <div class="alert">
+            <div class="alert-icon">!</div>
+            <div class="alert-content">
+                <strong>Action Required</strong>
+                <div class="alert-details">Auto Loan Application #AL-2025-1234 needs documentation (due in 4 days). Please upload: 
+                    <span class="alert-link" onclick="expandCategoryForForm('loans', 'income-proof')">Proof of Income</span>, 
+                    <span class="alert-link" onclick="expandCategoryForForm('auto', 'purchase-agreement')">Vehicle Purchase Agreement</span>, and 
+                    <span class="alert-link" onclick="expandCategoryForForm('auto', 'insurance-proof')">Proof of Insurance</span>.
+                </div>
+            </div>
+        </div>
+
+        <div class="process-section">
+            <div class="process-header">
+                <h2>Start Your Document Process</h2>
+                <p>Choose whether you want to upload a completed document or find a new form to download and complete.</p>
+            </div>
+
+            <div class="action-areas">
+                <div class="action-area">
+                    <div class="action-label">Upload a Completed Document</div>
+                    <div class="action-description">Securely send us a form you've already filled out.</div>
+                    <button class="action-button" onclick="openUploadModal()">Upload Completed Form</button>
+                </div>
+                <div class="action-divider"></div>
+                <div class="action-area">
+                    <div class="action-label">Find and Download a Form</div>
+                    <div class="action-description">Search for the form or document you need to begin.</div>
+                    <div class="search-container">
+                        <input type="text" class="search-field" placeholder="Search by form name or topic... (e.g. Proof of Income)" id="globalSearch">
+                        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                        </svg>
+                        <div class="search-results" id="searchResults"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="categories-header">
+            <h2>Available Forms & Document Categories</h2>
+            <p>Need a copy of a form or agreement for one of our products or services? Find the downloadable documents you need by browsing the categories below.</p>
+        </div>
+
+        <div class="category-panels">
+            <div class="category-panel" data-category="membership">
+                <div class="category-header" onclick="togglePanel('membership')">
+                    <div class="category-info">
+                        <div class="category-icon">👤</div>
+                        <div class="category-text">
+                            <div class="category-title">Membership</div>
+                            <div class="category-description">Membership applications, account changes, and identity verification</div>
+                        </div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="category-content">
+                    <div class="category-content-inner" id="membership-content">
+                    </div>
+                </div>
+            </div>
+
+            <div class="category-panel" data-category="loans">
+                <div class="category-header" onclick="togglePanel('loans')">
+                    <div class="category-info">
+                        <div class="category-icon">🏠</div>
+                        <div class="category-text">
+                            <div class="category-title">Loans</div>
+                            <div class="category-description">Loan applications, credit forms, and borrower documentation</div>
+                        </div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="category-content">
+                    <div class="category-content-inner" id="loans-content">
+                    </div>
+                </div>
+            </div>
+
+            <div class="category-panel" data-category="taxes">
+                <div class="category-header" onclick="togglePanel('taxes')">
+                    <div class="category-info">
+                        <div class="category-icon">📊</div>
+                        <div class="category-text">
+                            <div class="category-title">Taxes</div>
+                            <div class="category-description">Tax forms, withholding requests, and IRS documentation</div>
+                        </div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="category-content">
+                    <div class="category-content-inner" id="taxes-content">
+                    </div>
+                </div>
+            </div>
+
+            <div class="category-panel" data-category="creditcards">
+                <div class="category-header" onclick="togglePanel('creditcards')">
+                    <div class="category-info">
+                        <div class="category-icon">💳</div>
+                        <div class="category-text">
+                            <div class="category-title">Credit Cards</div>
+                            <div class="category-description">Credit card agreements and benefit information</div>
+                        </div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="category-content">
+                    <div class="category-content-inner" id="creditcards-content">
+                    </div>
+                </div>
+            </div>
+
+            <div class="category-panel" data-category="checking">
+                <div class="category-header" onclick="togglePanel('checking')">
+                    <div class="category-info">
+                        <div class="category-icon">🏦</div>
+                        <div class="category-text">
+                            <div class="category-title">Banking</div>
+                            <div class="category-description">Checking, savings, and deposit account forms</div>
+                        </div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="category-content">
+                    <div class="category-content-inner" id="checking-content">
+                    </div>
+                </div>
+            </div>
+
+            <div class="category-panel" data-category="auto">
+                <div class="category-header" onclick="togglePanel('auto')">
+                    <div class="category-info">
+                        <div class="category-icon">🚗</div>
+                        <div class="category-text">
+                            <div class="category-title">Auto</div>
+                            <div class="category-description">Vehicle-related forms and auto loan documentation</div>
+                        </div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="category-content">
+                    <div class="category-content-inner" id="auto-content">
+                    </div>
+                </div>
+            </div>
+
+            <div class="category-panel" data-category="legal">
+                <div class="category-header" onclick="togglePanel('legal')">
+                    <div class="category-info">
+                        <div class="category-icon">⚖️</div>
+                        <div class="category-text">
+                            <div class="category-title">Legal Instructions</div>
+                            <div class="category-description">Estate, trust, and organizational account documentation</div>
+                        </div>
+                    </div>
+                    <div class="expand-icon">▼</div>
+                </div>
+                <div class="category-content">
+                    <div class="category-content-inner" id="legal-content">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="upload-modal">
+        <div class="upload-modal-content">
+            <div class="upload-modal-header">
+                <h3 id="uploadModalTitle">Upload Document</h3>
+                <button class="modal-close-btn" onclick="closeUploadModal()">✕</button>
+            </div>
+            <div class="upload-modal-body">
+                <form class="upload-form" id="uploadForm">
+                    <div class="form-group">
+                        <label class="form-label">Document Category</label>
+                        <select class="form-select" id="documentCategory" required>
+                            <option value="">Select a category</option>
+                            <option value="membership">Membership</option>
+                            <option value="taxes">Taxes</option>
+                            <option value="auto" selected>Auto</option>
+                            <option value="loans">Loans</option>
+                            <option value="creditcards">Credit Cards</option>
+                            <option value="checking">Banking</option>
+                            <option value="legal">Legal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Document Type</label>
+                        <select class="form-select" id="documentType" required>
+                            <option value="">Select document type</option>
+                            <option value="purchase-agreement" selected>Vehicle Purchase Agreement</option>
+                            <option value="insurance-proof">Proof of Insurance</option>
+                            <option value="intent-sell">Letter of Intent to Sell Vehicle (Form 127-B)</option>
+                            <option value="self-repair">Request to Self-Repair Vehicle Damaged in Accident (Form 784)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Application Reference (if applicable)</label>
+                        <input type="text" class="form-input" id="applicationRef" placeholder="e.g., AL-2025-1234" value="AL-2025-1234">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Upload Files</label>
+                        <div class="upload-counter" id="uploadCounter">
+                            You can upload up to 5 files (4 remaining)
+                        </div>
+                        <div class="file-drop-zone" id="fileDropZone">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">Drag and drop files here, or click to browse</div>
+                            <div class="upload-subtext">Supports PDF, JPG, PNG, DOC (max 10MB each)</div>
+                            <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display: none;">
+                        </div>
+                        <div id="fileList" style="margin-top: 15px;">
+                            <div class="upload-item" data-file-id="demo-file-1">
+                                <div class="file-icon">📄</div>
+                                <div class="upload-details" style="flex: 1;">
+                                    <div class="upload-name">Vehicle_Purchase_Agreement_Honda_Civic.pdf</div>
+                                    <div class="upload-meta">2.3 MB</div>
+                                    <div class="file-comment">
+                                        <label class="file-comment-label">Comments (optional):</label>
+                                        <textarea placeholder="Add any notes about this document..." onchange="updateFileComment('demo-file-1', this.value)">Purchase agreement for 2024 Honda Civic from Honda of Memphis</textarea>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="removeFile('demo-file-1')" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; align-self: flex-start;">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="consent-section">
+                            <label class="consent-label">
+                                <input type="checkbox" id="consentCheckbox" required class="consent-checkbox" checked>
+                                <span class="consent-text">I consent to Pentagon Federal Credit Union's (PenFed) processing of my personal data, by automated means or otherwise, pursuant to its <a href="#" class="consent-link">Privacy Policy</a>, <a href="#" class="consent-link">GDPR</a> and <a href="#" class="consent-link">Cookie</a> policies to evaluate my application for products and services offered through PenFed or to complete transactions. If I am outside the United States, I consent to the transfer of my personal data across borders as described herein or the aforementioned privacy policies.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="captcha-section">
+                            <div class="captcha-box" id="captchaBox">
+                                <input type="checkbox" id="captchaCheckbox" required class="captcha-checkbox" checked>
+                                <label for="captchaCheckbox" class="captcha-label">I'm not a robot</label>
+                                <div class="captcha-logo">
+                                    <div class="recaptcha-text">reCAPTCHA</div>
+                                    <div class="recaptcha-links">
+                                        <a href="#" class="recaptcha-link">Privacy</a> - <a href="#" class="recaptcha-link">Terms</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-actions">
+                        <button type="button" class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
+                        <button type="button" class="btn" id="uploadSubmitBtn" onclick="handleUploadSubmit()">Upload Documents</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission History Modal -->
+    <div id="historyModal" class="upload-modal">
+        <div class="upload-modal-content" style="max-width: 800px;">
+            <div class="upload-modal-header">
+                <h3>Your Document Submission History</h3>
+                <button class="modal-close-btn" onclick="closeHistoryModal()">✕</button>
+            </div>
+            <div class="upload-modal-body">
+                <div class="history-filters" style="margin-bottom: 24px;">
+                    <div style="display: flex; gap: 16px; align-items: center;">
+                        <select class="form-select" style="width: 200px;">
+                            <option>All Categories</option>
+                            <option>Membership</option>
+                            <option>Loans</option>
+                            <option>Taxes</option>
+                            <option>Auto</option>
+                            <option>Credit Cards</option>
+                            <option>Banking</option>
+                        </select>
+                        <select class="form-select" style="width: 150px;">
+                            <option>Last 30 days</option>
+                            <option>Last 3 months</option>
+                            <option>Last 6 months</option>
+                            <option selected>All time</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="history-list">
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="history-date">January 18, 2025</div>
+                            <div class="history-status status-processing">Processing</div>
+                        </div>
+                        <div class="history-details">
+                            <div class="history-category">Auto Loan Application #AL-2025-1234</div>
+                            <div class="history-files">
+                                <span class="file-count">3 files:</span>
+                                <span class="file-names">proof_of_income.pdf, vehicle_agreement.pdf, insurance_card.jpg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="history-date">December 15, 2024</div>
+                            <div class="history-status status-approved">Approved</div>
+                        </div>
+                        <div class="history-details">
+                            <div class="history-category">Taxes - IRS Form W-9</div>
+                            <div class="history-files">
+                                <span class="file-count">1 file:</span>
+                                <span class="file-names">completed_w9_form.pdf</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="history-date">November 3, 2024</div>
+                            <div class="history-status status-approved">Approved</div>
+                        </div>
+                        <div class="history-details">
+                            <div class="history-category">Membership - Signature Card</div>
+                            <div class="history-files">
+                                <span class="file-count">1 file:</span>
+                                <span class="file-names">signature_card_form13.pdf</span>
+                            </div>
+                            <div class="history-comment">Updated signature for joint account holder</div>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="history-date">October 28, 2024</div>
+                            <div class="history-status status-rejected">Needs Attention</div>
+                        </div>
+                        <div class="history-details">
+                            <div class="history-category">Banking - Direct Deposit Form</div>
+                            <div class="history-files">
+                                <span class="file-count">1 file:</span>
+                                <span class="file-names">direct_deposit_1299.pdf</span>
+                            </div>
+                            <div class="history-comment">Document unclear - please resubmit with clearer bank routing information</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-actions" style="margin-top: 24px; text-align: center;">
+                    <button class="btn-cancel" onclick="closeHistoryModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Toast functions defined first
+        function showSuccessToast() {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <button class="toast-close" onclick="hideToast(this.parentElement)">✕</button>
+                <div class="toast-header">
+                    <div class="toast-icon">✓</div>
+                    <h4 class="toast-title">Upload Successful!</h4>
+                </div>
+                <p class="toast-message">Congratulations Jennifer! Your Vehicle Purchase Agreement has been successfully uploaded for Auto Loan Application #AL-2025-1234. A confirmation has been sent to your email address. We'll review your documents and contact you within 1-2 business days.</p>
+            `;
+            
+            // Add to page
+            document.body.appendChild(toast);
+            
+            // Show toast with animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Auto-hide after 12 seconds - plenty of time to savor the success!
+            setTimeout(() => {
+                hideToast(toast);
+            }, 12000);
+        }
+
+        function hideToast(toast) {
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.parentElement.removeChild(toast);
+                }
+            }, 400);
+        }
+
+        function handleUploadSubmit() {
+            const category = document.getElementById('documentCategory').value;
+            const type = document.getElementById('documentType').value;
+            const appRef = document.getElementById('applicationRef').value;
+            const consent = document.getElementById('consentCheckbox').checked;
+            const captcha = document.getElementById('captchaCheckbox').checked;
+            
+            if (!category || !type || selectedFiles.length === 0 || !consent || !captcha) {
+                alert('Please fill in all required fields, upload at least one file, and complete all verification steps.');
+                return;
+            }
+            
+            // Close modal first
+            closeUploadModal();
+            
+            // Show success toast after modal closes
+            setTimeout(() => {
+                showSuccessToast();
+            }, 300);
+        }
+
+        const formData = {
+            membership: {
+                forms: [
+                    { name: 'Alternative Identification for Joint Owner (Form 39)', type: 'membership-id' },
+                    { name: 'Membership Application (Form 20)', type: 'membership-app' },
+                    { name: 'PenFed Membership Disclosures (English/Spanish Form 794)', type: 'membership-disclosure' },
+                    { name: 'Membership Application Supplement (Form 650)', type: 'membership-supplement' },
+                    { name: 'Signature Card (Form 13)', type: 'signature-card' },
+                    { name: 'Request for Change of Name/Social Security Number/EIN (Form 34)', type: 'name-change' }
+                ]
+            },
+            taxes: {
+                forms: [
+                    { name: 'Certificate of Foreign Status (W-8BEN)', type: 'w8ben' },
+                    { name: 'Member Request for Federal Tax Withholding (Form L-106)', type: 'tax-withholding' },
+                    { name: 'Request for Taxpayer ID Number and Certification (IRS Form W-9)', type: 'w9' },
+                    { name: 'Request for Transcript of Tax Return (IRS Form 4506T)', type: '4506t' }
+                ]
+            },
+            auto: {
+                forms: [
+                    { name: 'Vehicle Purchase Agreement', type: 'purchase-agreement', section: 'Auto Loans' },
+                    { name: 'Proof of Insurance', type: 'insurance-proof', section: 'Auto Loans' },
+                    { name: 'Letter of Intent to Sell Vehicle (Form 127-B)', type: 'intent-sell', section: 'Auto Loans' },
+                    { name: 'Request to Self-Repair Vehicle Damaged in Accident (Form 784)', type: 'self-repair', section: 'Auto Loans' }
+                ]
+            },
+            loans: {
+                forms: [
+                    { name: 'Proof of Income Documentation', type: 'income-proof', section: 'General Loans' },
+                    { name: 'Joint Borrower Authorization - Current PenFed Member (Form 4)', type: 'joint-borrower', section: 'General Loans' },
+                    { name: 'Loan Recurring Payment Instructions (Form 350)', type: 'payment-instructions', section: 'General Loans' },
+                    { name: 'Financial Hardship Application (COVID-19, Permanent and GSE Mortgage Assistance)', type: 'hardship', section: 'Mortgages and HELOCs' },
+                    { name: 'Mortgage Subordination - Processing Fee (Form 1372)', type: 'subordination', section: 'Mortgages and HELOCs' },
+                    { name: 'Application to Release Co-Signer for Student Loan Refinance (Form 159)', type: 'cosigner-release', section: 'Student Loans' }
+                ]
+            },
+            creditcards: {
+                forms: [
+                    { name: 'Cardholder Agreement', type: 'cardholder-agreement', section: 'Cardholder Agreement' },
+                    { name: 'PenFed Platinum Rewards', type: 'platinum-rewards', section: 'Rewards Program Rules' },
+                    { name: 'PenFed Power Cash Rewards', type: 'cash-rewards', section: 'Rewards Program Rules' }
+                ]
+            },
+            checking: {
+                forms: [
+                    { name: 'Access America & Free Checking Account Application (Form 151)', type: 'checking-app', section: 'Checking Accounts' },
+                    { name: 'Student Checking Application (Form 151-STU)', type: 'student-checking', section: 'Checking Accounts' },
+                    { name: 'Direct Deposit Form - Government Agencies (Form 1199A)', type: 'dd-government', section: 'Direct Deposit' },
+                    { name: 'Direct Deposit Form – Non-government Agencies (Form 1299)', type: 'dd-nongovernment', section: 'Direct Deposit' }
+                ]
+            },
+            legal: {
+                forms: []
+            }
+        };
+
+        function togglePanel(categoryId) {
+            const panel = document.querySelector(`[data-category="${categoryId}"]`);
+            const content = panel.querySelector('.category-content-inner');
+            
+            if (!panel) return;
+            
+            const isExpanding = !panel.classList.contains('expanded');
+            
+            if (isExpanding) {
+                panel.classList.add('expanded');
+                loadCategoryContent(categoryId, content);
+            } else {
+                panel.classList.remove('expanded');
+            }
+        }
+
+        function loadCategoryContent(categoryId, contentEl) {
+            const category = formData[categoryId];
+            if (!category) return;
+            
+            let content = '';
+            
+            if (category.forms.length === 0) {
+                content = `
+                    <div style="padding: 20px; text-align: center; color: #666;">
+                        <p>Legal forms and instructions are available upon request. Contact our team for assistance.</p>
+                    </div>
+                `;
+            } else {
+                const sections = {};
+                const noSectionForms = [];
+                
+                category.forms.forEach(form => {
+                    if (form.section) {
+                        if (!sections[form.section]) sections[form.section] = [];
+                        sections[form.section].push(form);
+                    } else {
+                        noSectionForms.push(form);
+                    }
+                });
+                
+                if (noSectionForms.length > 0) {
+                    noSectionForms.forEach(form => {
+                        const description = getFormDescription(form.type);
+                        content += `
+                            <div class="form-item">
+                                <div class="form-name-wrapper">
+                                    <a href="#" class="form-name">${form.name}</a>
+                                    <div class="form-description">${description}</div>
+                                </div>
+                                <a href="#" class="download-link">PDF</a>
+                            </div>
+                        `;
+                    });
+                }
+                
+                Object.keys(sections).forEach(sectionName => {
+                    content += `<div class="form-section"><h4>${sectionName}</h4>`;
+                    sections[sectionName].forEach(form => {
+                        const description = getFormDescription(form.type);
+                        content += `
+                            <div class="form-item">
+                                <div class="form-name-wrapper">
+                                    <a href="#" class="form-name">${form.name}</a>
+                                    <div class="form-description">${description}</div>
+                                </div>
+                                <a href="#" class="download-link">PDF</a>
+                            </div>
+                        `;
+                    });
+                    content += '</div>';
+                });
+            }
+            
+            contentEl.innerHTML = content;
+        }
+
+        function getFormDescription(formType) {
+            const descriptions = {
+                'income-proof': 'Pay stubs, tax returns, or employment verification',
+                'purchase-agreement': 'Sales contract or purchase agreement for vehicle',
+                'insurance-proof': 'Auto insurance policy or declaration page',
+                'membership-id': 'Alternative identification for joint account holders',
+                'membership-app': 'Standard membership application for new members',
+                'membership-disclosure': 'Terms and conditions for PenFed membership',
+                'membership-supplement': 'Additional information for membership approval',
+                'signature-card': 'Required signature verification document',
+                'name-change': 'Update personal information on file',
+                'w8ben': 'For non-US persons claiming treaty benefits',
+                'tax-withholding': 'Control federal tax withholding on dividends',
+                'w9': 'Provide taxpayer identification for tax reporting',
+                '4506t': 'Request tax return transcripts from IRS',
+                'intent-sell': 'Required when selling financed vehicle',
+                'self-repair': 'Authorization for self-repairing collision damage',
+                'joint-borrower': 'Add co-borrower to existing loan',
+                'payment-instructions': 'Set up automatic loan payments',
+                'hardship': 'Request assistance due to financial difficulties',
+                'subordination': 'Modify lien priority for mortgage refinancing',
+                'cosigner-release': 'Remove co-signer from student loan',
+                'cardholder-agreement': 'Terms and conditions for credit card use',
+                'platinum-rewards': 'Rewards program terms and benefits',
+                'cash-rewards': 'Cash back program rules and redemption',
+                'checking-app': 'Open new checking account',
+                'student-checking': 'Student-specific checking account application',
+                'dd-government': 'Direct deposit for government payments',
+                'dd-nongovernment': 'Direct deposit for employer payments'
+            };
+            return descriptions[formType] || 'Supporting documentation for your account';
+        }
+
+        function expandCategoryForForm(categoryId, formType) {
+            const panel = document.querySelector(`[data-category="${categoryId}"]`);
+            const content = panel.querySelector('.category-content-inner');
+            
+            if (!panel.classList.contains('expanded')) {
+                panel.classList.add('expanded');
+                loadCategoryContent(categoryId, content);
+            }
+            
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            setTimeout(() => {
+                panel.style.backgroundColor = '#e3f2fd';
+                setTimeout(() => {
+                    panel.style.backgroundColor = '';
+                }, 1500);
+                
+                highlightSpecificForm(categoryId, formType);
+            }, 500);
+        }
+
+        function highlightSpecificForm(categoryId, formType) {
+            setTimeout(() => {
+                const category = formData[categoryId];
+                if (!category) return;
+                
+                const targetForm = category.forms.find(form => form.type === formType);
+                if (!targetForm) return;
+                
+                const formItems = document.querySelectorAll(`[data-category="${categoryId}"] .form-item`);
+                formItems.forEach(item => {
+                    const formNameEl = item.querySelector('.form-name');
+                    if (formNameEl && formNameEl.textContent.includes(targetForm.name)) {
+                        item.classList.add('highlight-target');
+                        
+                        setTimeout(() => {
+                            item.classList.remove('highlight-target');
+                        }, 5000);
+                        
+                        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            }, 800);
+        }
+
+        function openUploadModal(categoryId = '', documentType = '') {
+            const modal = document.getElementById('uploadModal');
+            const categorySelect = document.getElementById('documentCategory');
+            const typeSelect = document.getElementById('documentType');
+            const submitBtn = document.getElementById('uploadSubmitBtn');
+            const consentCheckbox = document.getElementById('consentCheckbox');
+            const captchaCheckbox = document.getElementById('captchaCheckbox');
+            
+            if (categoryId) {
+                categorySelect.value = categoryId;
+                updateDocumentTypes(categoryId);
+                if (documentType) {
+                    typeSelect.value = documentType;
+                }
+            } else {
+                categorySelect.value = 'auto';
+                updateDocumentTypes('auto');
+                setTimeout(() => typeSelect.value = 'purchase-agreement', 100);
+            }
+            
+            consentCheckbox.checked = true;
+            captchaCheckbox.checked = true;
+            submitBtn.disabled = false;
+            
+            modal.style.display = 'block';
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            // Don't reset the form or clear files - keep them for demo purposes
+            // document.getElementById('uploadForm').reset();
+            // document.getElementById('fileList').innerHTML = '';
+            // selectedFiles = [];
+            // updateUploadCounter();
+            // document.getElementById('uploadSubmitBtn').disabled = true;
+        }
+
+        function updateDocumentTypes(categoryId) {
+            const typeSelect = document.getElementById('documentType');
+            const category = formData[categoryId];
+            
+            typeSelect.innerHTML = '<option value="">Select document type</option>';
+            
+            if (category && category.forms.length > 0) {
+                category.forms.forEach(form => {
+                    const option = document.createElement('option');
+                    option.value = form.type;
+                    option.textContent = form.name;
+                    typeSelect.appendChild(option);
+                });
+            }
+        }
+
+        const fileDropZone = document.getElementById('fileDropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadCounter = document.getElementById('uploadCounter');
+        let selectedFiles = [
+            {
+                file: { name: 'Vehicle_Purchase_Agreement_Honda_Civic.pdf', size: 2411724 },
+                comment: 'Purchase agreement for 2024 Honda Civic from Honda of Memphis',
+                id: 'demo-file-1'
+            }
+        ];
+        const maxFiles = 5;
+
+        function updateUploadCounter() {
+            const remaining = maxFiles - selectedFiles.length;
+            const counterEl = document.getElementById('uploadCounter');
+            
+            if (remaining > 0) {
+                counterEl.textContent = `You can upload up to 5 files (${remaining} remaining)`;
+                counterEl.className = 'upload-counter';
+                if (remaining <= 2) {
+                    counterEl.classList.add('warning');
+                }
+            } else {
+                counterEl.textContent = 'Upload limit reached (5 files maximum)';
+                counterEl.className = 'upload-counter limit-reached';
+            }
+        }
+
+        function autoFillFromFile(fileName) {
+            const categorySelect = document.getElementById('documentCategory');
+            const typeSelect = document.getElementById('documentType');
+            
+            const lowerName = fileName.toLowerCase();
+            
+            if (lowerName.includes('w9') || lowerName.includes('tax') || lowerName.includes('w-9')) {
+                categorySelect.value = 'taxes';
+                updateDocumentTypes('taxes');
+                setTimeout(() => typeSelect.value = 'w9', 100);
+            } else if (lowerName.includes('w8') || lowerName.includes('w-8')) {
+                categorySelect.value = 'taxes';
+                updateDocumentTypes('taxes');
+                setTimeout(() => typeSelect.value = 'w8ben', 100);
+            } else if (lowerName.includes('loan') || lowerName.includes('mortgage')) {
+                categorySelect.value = 'loans';
+                updateDocumentTypes('loans');
+            } else if (lowerName.includes('auto') || lowerName.includes('vehicle') || lowerName.includes('car')) {
+                categorySelect.value = 'auto';
+                updateDocumentTypes('auto');
+            } else if (lowerName.includes('checking') || lowerName.includes('deposit')) {
+                categorySelect.value = 'checking';
+                updateDocumentTypes('checking');
+            } else if (lowerName.includes('credit') || lowerName.includes('card')) {
+                categorySelect.value = 'creditcards';
+                updateDocumentTypes('creditcards');
+            } else if (lowerName.includes('member') || lowerName.includes('application')) {
+                categorySelect.value = 'membership';
+                updateDocumentTypes('membership');
+            }
+        }
+
+        fileDropZone.addEventListener('click', () => {
+            if (selectedFiles.length < maxFiles) {
+                fileInput.click();
+            }
+        });
+        
+        fileDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (selectedFiles.length < maxFiles) {
+                fileDropZone.classList.add('dragover');
+            }
+        });
+        
+        fileDropZone.addEventListener('dragleave', () => {
+            fileDropZone.classList.remove('dragover');
+        });
+        
+        fileDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            if (selectedFiles.length < maxFiles) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (selectedFiles.length >= maxFiles) {
+                    alert('Maximum 5 files allowed');
+                    return;
+                }
+                
+                if (file.size <= 10 * 1024 * 1024) {
+                    selectedFiles.push({
+                        file: file,
+                        comment: '',
+                        id: Date.now() + Math.random()
+                    });
+                    
+                    if (selectedFiles.length === 1) {
+                        autoFillFromFile(file.name);
+                    }
+                    
+                    displayFile(selectedFiles[selectedFiles.length - 1]);
+                    updateUploadCounter();
+                } else {
+                    alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+                }
+            });
+        }
+
+        function displayFile(fileObj) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'upload-item';
+            fileItem.setAttribute('data-file-id', fileObj.id);
+            fileItem.innerHTML = `
+                <div class="file-icon">📄</div>
+                <div class="upload-details" style="flex: 1;">
+                    <div class="upload-name">${fileObj.file.name}</div>
+                    <div class="upload-meta">${(fileObj.file.size / 1024 / 1024).toFixed(2)} MB</div>
+                    <div class="file-comment">
+                        <label class="file-comment-label">Comments (optional):</label>
+                        <textarea placeholder="Add any notes about this document..." onchange="updateFileComment('${fileObj.id}', this.value)">${fileObj.comment}</textarea>
+                    </div>
+                </div>
+                <button type="button" onclick="removeFile('${fileObj.id}')" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; align-self: flex-start;">Remove</button>
+            `;
+            fileList.appendChild(fileItem);
+        }
+
+        function updateFileComment(fileId, comment) {
+            const fileObj = selectedFiles.find(f => f.id == fileId);
+            if (fileObj) {
+                fileObj.comment = comment;
+            }
+        }
+
+        function removeFile(fileId) {
+            selectedFiles = selectedFiles.filter(f => f.id != fileId);
+            const fileItem = document.querySelector(`[data-file-id="${fileId}"]`);
+            if (fileItem) {
+                fileItem.remove();
+            }
+            updateUploadCounter();
+        }
+
+        function validateForm() {
+            const category = document.getElementById('documentCategory').value;
+            const type = document.getElementById('documentType').value;
+            const consent = document.getElementById('consentCheckbox').checked;
+            const captcha = document.getElementById('captchaCheckbox').checked;
+            const submitBtn = document.getElementById('uploadSubmitBtn');
+            
+            const isValid = category && type && selectedFiles.length > 0 && consent && captcha;
+            submitBtn.disabled = !isValid;
+        }
+
+        document.getElementById('documentCategory').addEventListener('change', validateForm);
+        document.getElementById('documentType').addEventListener('change', validateForm);
+        document.getElementById('consentCheckbox').addEventListener('change', validateForm);
+        document.getElementById('captchaCheckbox').addEventListener('change', validateForm);
+
+        document.getElementById('uploadForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const category = document.getElementById('documentCategory').value;
+            const type = document.getElementById('documentType').value;
+            const appRef = document.getElementById('applicationRef').value;
+            const consent = document.getElementById('consentCheckbox').checked;
+            const captcha = document.getElementById('captchaCheckbox').checked;
+            
+            if (!category || !type || selectedFiles.length === 0 || !consent || !captcha) {
+                alert('Please fill in all required fields, upload at least one file, and complete all verification steps.');
+                return;
+            }
+            
+            // Close modal first
+            closeUploadModal();
+            
+            // Show success toast after modal closes
+            setTimeout(() => {
+                showSuccessToast();
+            }, 300);
+        });
+
+        document.getElementById('documentCategory').addEventListener('change', (e) => {
+            updateDocumentTypes(e.target.value);
+        });
+
+        document.getElementById('globalSearch').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            const searchResults = document.getElementById('searchResults');
+            
+            if (searchTerm.length < 2) {
+                searchResults.classList.remove('active');
+                return;
+            }
+            
+            const results = searchForms(searchTerm);
+            displaySearchResults(results, searchTerm);
+        });
+
+        document.getElementById('globalSearch').addEventListener('focus', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            if (searchTerm.length >= 2) {
+                const results = searchForms(searchTerm);
+                displaySearchResults(results, searchTerm);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                document.getElementById('searchResults').classList.remove('active');
+            }
+        });
+
+        function searchForms(searchTerm) {
+            const allForms = [];
+            const urgentForms = ['proof of income', 'vehicle purchase agreement', 'proof of insurance'];
+            
+            Object.keys(formData).forEach(categoryKey => {
+                const category = formData[categoryKey];
+                category.forms.forEach(form => {
+                    allForms.push({
+                        ...form,
+                        category: categoryKey,
+                        categoryTitle: getCategoryTitle(categoryKey),
+                        description: getFormDescription(form.type),
+                        isUrgent: urgentForms.some(urgent => 
+                            form.name.toLowerCase().includes(urgent) || 
+                            urgent.includes(searchTerm)
+                        )
+                    });
+                });
+            });
+
+            const commonDocs = [
+                { name: 'Proof of Income', category: 'loans', categoryTitle: 'Loans', type: 'income-proof', description: 'Pay stubs, tax returns, or employment verification', isUrgent: true },
+                { name: 'Vehicle Purchase Agreement', category: 'auto', categoryTitle: 'Auto', type: 'purchase-agreement', description: 'Sales contract or purchase agreement for vehicle', isUrgent: true },
+                { name: 'Proof of Insurance', category: 'auto', categoryTitle: 'Auto', type: 'insurance-proof', description: 'Auto insurance policy or declaration page', isUrgent: true }
+            ];
+
+            allForms.push(...commonDocs);
+
+            return allForms.filter(form => {
+                const formName = form.name.toLowerCase();
+                const formDesc = form.description.toLowerCase();
+                const category = form.categoryTitle.toLowerCase();
+                
+                return formName.includes(searchTerm) || 
+                       formDesc.includes(searchTerm) || 
+                       category.includes(searchTerm) ||
+                       searchTerm.split(' ').some(word => 
+                           formName.includes(word) || formDesc.includes(word)
+                       );
+            }).sort((a, b) => {
+                if (a.isUrgent && !b.isUrgent) return -1;
+                if (!a.isUrgent && b.isUrgent) return 1;
+                
+                const aExact = a.name.toLowerCase().includes(searchTerm);
+                const bExact = b.name.toLowerCase().includes(searchTerm);
+                if (aExact && !bExact) return -1;
+                if (!aExact && bExact) return 1;
+                
+                return 0;
+            }).slice(0, 8);
+        }
+
+        function getCategoryTitle(categoryKey) {
+            const titles = {
+                'membership': 'Membership',
+                'loans': 'Loans', 
+                'taxes': 'Taxes',
+                'auto': 'Auto',
+                'creditcards': 'Credit Cards',
+                'checking': 'Banking',
+                'legal': 'Legal'
+            };
+            return titles[categoryKey] || categoryKey;
+        }
+
+        function displaySearchResults(results, searchTerm) {
+            const searchResults = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="no-results">No forms found for "' + searchTerm + '"</div>';
+                searchResults.classList.add('active');
+                return;
+            }
+
+            const resultsHTML = results.map(result => `
+                <div class="search-result-item ${result.isUrgent ? 'search-result-urgent' : ''}" 
+                     onclick="selectSearchResult('${result.category}', '${result.type}', '${result.name}')">
+                    <div class="search-result-title">
+                        ${result.name}
+                        ${result.isUrgent ? ' <span style="color: #ffc107; font-weight: bold;">⚠️ Required</span>' : ''}
+                    </div>
+                    <div class="search-result-category">${result.categoryTitle}</div>
+                    <div class="search-result-description">${result.description}</div>
+                </div>
+            `).join('');
+
+            searchResults.innerHTML = resultsHTML;
+            searchResults.classList.add('active');
+        }
+
+        function selectSearchResult(category, type, name) {
+            document.getElementById('searchResults').classList.remove('active');
+            document.getElementById('globalSearch').value = name;
+            
+            const accordionDocuments = ['income-proof', 'purchase-agreement', 'insurance-proof'];
+            
+            if (accordionDocuments.includes(type)) {
+                expandCategoryForForm(category, type);
+            } else {
+                openUploadModal(category, type);
+            }
+        }
+        
+        function openHistoryModal() {
+            document.getElementById('historyModal').style.display = 'block';
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        function showSuccessToast() {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <button class="toast-close" onclick="hideToast(this.parentElement)">✕</button>
+                <div class="toast-header">
+                    <div class="toast-icon">✓</div>
+                    <h4 class="toast-title">Upload Successful!</h4>
+                </div>
+                <p class="toast-message">Congratulations Jennifer! Your Vehicle Purchase Agreement has been successfully uploaded for Auto Loan Application #AL-2025-1234. We'll review your documents and contact you within 1-2 business days.</p>
+            `;
+            
+            // Add to page
+            document.body.appendChild(toast);
+            
+            // Show toast with animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideToast(toast);
+            }, 5000);
+        }
+
+        function hideToast(toast) {
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.parentElement.removeChild(toast);
+                }
+            }, 400);
+        }
+
+        window.addEventListener('click', (event) => {
+            const uploadModal = document.getElementById('uploadModal');
+            const historyModal = document.getElementById('historyModal');
+            
+            if (event.target === uploadModal) closeUploadModal();
+            if (event.target === historyModal) closeHistoryModal();
+        });
+    </script>
+</body>
+</html>
