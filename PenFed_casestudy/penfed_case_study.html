@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PenFed Document Upload Case Study</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            padding: 80px 0;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .section:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .section-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .section:nth-child(even) .section-content {
+            direction: rtl;
+        }
+
+        .section:nth-child(even) .text-content {
+            direction: ltr;
+        }
+
+        .text-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1c3664;
+            line-height: 1.2;
+        }
+
+        .hero-section {
+            padding: 80px 0;
+            min-height: 350px;
+            text-align: center;
+            background-color: #ffffff;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1c3664;
+            line-height: 1.2;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .text-content h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #1c3664;
+            line-height: 1.3;
+        }
+
+        .text-content h3 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+            color: #0399cd;
+        }
+
+        .text-content p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #555;
+            font-weight: 400;
+        }
+
+        .text-content ul {
+            margin-bottom: 1.5rem;
+        }
+
+        .text-content li {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #555;
+            list-style-position: inside;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+
+        .author-info {
+            font-size: 1rem;
+            color: #0399cd;
+            font-weight: 600;
+        }
+
+        .image-content {
+            text-align: center;
+        }
+
+        .image-content img {
+            width: 650px;
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            cursor: zoom-in;
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 650px;
+        }
+
+        .thumbnail-grid img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            cursor: zoom-in;
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail-grid img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            border-color: #c0c0c0;
+        }
+
+        .thumbnail-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 650px;
+        }
+
+        .thumbnail-grid-2 img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            cursor: zoom-in;
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail-grid-2 img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            border-color: #c0c0c0;
+        }
+
+        @media (max-width: 768px) {
+            .thumbnail-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                max-width: 400px;
+            }
+
+            .thumbnail-grid-2 {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                max-width: 400px;
+            }
+        }
+
+        /* Lightbox overlay styles */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+
+        .lightbox-overlay.active {
+            display: flex;
+        }
+
+        .lightbox-image {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: 300;
+            cursor: pointer;
+            z-index: 1001;
+            transition: opacity 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            opacity: 0.7;
+        }
+
+        .prototype-link {
+            display: inline-block;
+            background: #1c3664;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .prototype-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(28, 54, 100, 0.3);
+            background: #0f2544;
+        }
+
+        .prototype-link.light-blue {
+            background: rgba(3, 153, 205, 0.2);
+            border: 2px solid rgba(3, 153, 205, 0.3);
+            color: #0399cd;
+            font-weight: 600;
+        }
+
+        .prototype-link.light-blue:hover {
+            background: rgba(3, 153, 205, 0.1);
+            border-color: rgba(3, 153, 205, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(3, 153, 205, 0.2);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #1c3664 0%, #0399cd 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .cta-section h2 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .cta-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .section-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .section:nth-child(even) .section-content {
+                direction: ltr;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .text-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .section {
+                padding: 60px 0;
+                min-height: auto;
+            }
+
+            .image-content img {
+                width: 100%;
+                max-width: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="section hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Redesigning the PenFed Document Upload Experience for Members</h1>
+                <p class="subtitle">Transforming a fragmented upload process into a seamless, member-first, transparent experience.</p>
+                <p class="author-info">Jennifer Smith | July 2025</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Challenge Section -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h2>The Challenge</h2>
+                    <p>Members typically need to upload documents in two distinct scenarios: when PenFed proactively requests specific documents via email to complete application processing, or when members themselves need to submit forms for their own banking needs. However, both user journeys suffered from the same fundamental issues.</p>
+                    <ul>
+                        <li>Members encounter scattered entry points across different sections of the site, creating confusion about where to start the upload process</li>
+                        <li>The upload experience feels purely transactional—members lack visibility into what happens after submission and receive minimal guidance throughout the process</li>
+                        <li>Document status tracking is limited or unclear, leaving members uncertain about whether their submissions were received or approved</li>
+                    </ul>
+                    <h3>Design Goals:</h3>
+                    <ul>
+                        <li>Create an upload experience that feels easy, supported, and secure for both proactive and self-service scenarios</li>
+                        <li>Surface key documents, requirements, and due dates clearly to reduce member confusion</li>
+                        <li>Reinforce trust through transparency, real-time feedback, and clear progress indicators</li>
+                    </ul>
+                </div>
+                <div class="image-content">
+                    <img src="PF-HOME.png" alt="Original PenFed Homepage" onclick="openLightbox(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Before Section -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h2>Before: The Fragmented Experience</h2>
+                    <p>Members must dig through menus to locate forms or begin the upload process.</p>
+                    <p>The original experience required members to navigate through multiple screens and menus, creating friction and confusion in what should be a straightforward process.</p>
+                </div>
+                <div class="image-content">
+                    <div class="thumbnail-grid">
+                        <img src="PF-HOME.png" alt="Original PenFed Homepage" onclick="openLightbox(this)">
+                        <img src="penfed_menu.png" alt="Original PenFed Menu Navigation" onclick="openLightbox(this)">
+                        <img src="forms_agreements.png" alt="Forms and Agreements Page" onclick="openLightbox(this)">
+                        <img src="secure_upload.png" alt="Secure Upload Interface" onclick="openLightbox(this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- After - Homepage Entry -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h2>After: A Member-First Flow</h2>
+                    <h3>Homepage Entry Point</h3>
+                    <p>Clear entry point into the Document Center—visible and accessible from the homepage. The document center is now available in the main menu and can also be accessed via the feature tile.</p>
+                    <a href="https://jenrefins.github.io/penfed-document-center/penfed_document_center.html" class="prototype-link light-blue" target="_blank">View Live Prototype</a>
+                </div>
+                <div class="image-content">
+                    <img src="PF_home_doccenter.png" alt="PenFed Homepage with Document Center" onclick="openLightbox(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Center -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h3>Personalized Document Center</h3>
+                    <p>Members who were contacted via email see a clear action alert at the top, while all users benefit from the intuitive upload entry point and categorized forms. Clicking any form referenced in the toast notification instantly opens the relevant panel below, guiding members to the exact document required.</p>
+                </div>
+                <div class="image-content">
+                    <div class="thumbnail-grid-2">
+                        <img src="1_PenFed Document Center - home 1.png" alt="PenFed Document Center Home" onclick="openLightbox(this)">
+                        <img src="2_Action_required_toast.png" alt="Action Required Toast Notification" onclick="openLightbox(this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h3>Upload Modal</h3>
+                    <p>By pre-filling member details and document requirements, the upload modal eliminates unnecessary form fields and reduces cognitive load. Members can focus on the upload itself rather than navigating complex forms.</p>
+                </div>
+                <div class="image-content">
+                    <img src="3_prefilled_doc_upload_modal.png" alt="Prefilled Document Upload Modal" onclick="openLightbox(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trust Through Transparency -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h2>Emotional Trust Through Transparency</h2>
+                    <h3>Success Feedback</h3>
+                    <p>Real-time feedback reassures members their documents were received and are being reviewed. Clear status indicators eliminate uncertainty and build confidence.</p>
+                </div>
+                <div class="image-content">
+                    <img src="success_toast_notification.png" alt="Success Toast Notification" onclick="openLightbox(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission History -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h3>Submission History</h3>
+                    <p>Members can view past submissions, check approval statuses, and re-download files if needed. This transparency builds trust and provides members with complete control over their document journey.</p>
+                </div>
+                <div class="image-content">
+                    <img src="1.2submission_history_modal.png" alt="Submission History Modal" onclick="openLightbox(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Search -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h2>Smart Search and Required Forms</h2>
+                    <h3>Predictive Search</h3>
+                    <p>Members can quickly find what they need using smart, filtered search with visual priority cues, entering just two letters will show the dropdown menu. Mention that clicking the document expands the proper panel below.</p>
+                </div>
+                <div class="image-content">
+                    <div class="thumbnail-grid-2">
+                        <img src="4_search_dropdown.png" alt="Search Dropdown Interface" onclick="openLightbox(this)">
+                        <img src="5_search_highlight_after.png" alt="Search Results with Highlighting" onclick="openLightbox(this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expanded Categories -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h3>Expanded Categories</h3>
+                    <p>When members proactively log in to search for forms themselves, they benefit from both clear categorical organization and smart search functionality. Whether browsing categories or typing just a few letters in the search bar, members can find their needed documents independently and efficiently.</p>
+                </div>
+                <div class="image-content">
+                    <img src="forms_documents.png" alt="Forms & Documents" onclick="openLightbox(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="section">
+        <div class="container">
+            <div class="section-content">
+                <div class="text-content">
+                    <h2>The Result</h2>
+                    <ul>
+                        <li>Unified document upload across authenticated and unauthenticated journeys</li>
+                        <li>Trust signals through feedback, personalization, and history</li>
+                        <li>Less frustration. More confidence. Member-centered design, done right.</li>
+                    </ul>
+                </div>
+                <div class="image-content">
+                    <img src="success_toast_notification.png" alt="Success Toast Notification" onclick="openLightbox(this)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+        <div class="container">
+            <h2>Thank You</h2>
+            <p>Thanks for reviewing this design solution. I'd love to walk you through the full flow live and discuss next steps.</p>
+            <a href="https://jenrefins.github.io/penfed-document-center/penfed_document_center.html" class="cta-button" target="_blank">View Interactive Prototype</a>
+        </div>
+    </div>
+
+    <!-- Lightbox Overlay -->
+    <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img class="lightbox-image" id="lightbox-image" src="" alt="">
+    </div>
+
+    <script>
+        function openLightbox(img) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            
+            lightboxImage.src = img.src;
+            lightboxImage.alt = img.alt;
+            lightbox.classList.add('active');
+            
+            // Prevent body scrolling when lightbox is open
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            
+            // Restore body scrolling
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close lightbox with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
