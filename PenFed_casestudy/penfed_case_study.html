@@ -266,6 +266,10 @@
             cursor: grabbing;
         }
 
+        .lightbox-image.no-zoom {
+            cursor: default;
+        }
+
         .zoom-controls {
             position: absolute;
             bottom: 30px;
@@ -680,6 +684,12 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
                 lightboxImage.alt = element.alt;
                 lightboxImage.style.display = 'block';
                 currentImageElement = lightboxImage;
+                
+                // Wait for image to load before setting up drag listeners
+                lightboxImage.onload = function() {
+                    setupDragListeners();
+                    updateImageTransform();
+                };
             } else {
                 // For placeholder divs, create a placeholder in the lightbox
                 lightboxImage.style.display = 'none';
@@ -690,13 +700,14 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
                 lightboxWrapper.innerHTML = '';
                 lightboxWrapper.appendChild(placeholder);
                 currentImageElement = placeholder;
+                
+                // Set up drag listeners immediately for placeholders
+                setupDragListeners();
+                updateImageTransform();
             }
             
             // Show zoom controls
             zoomControls.style.display = 'flex';
-            
-            // Add event listeners for dragging
-            setupDragListeners();
             
             lightbox.classList.add('active');
             updateZoomIndicator();
@@ -722,9 +733,35 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
             currentImageElement.addEventListener('contextmenu', e => e.preventDefault());
         }
 
+        function needsPanning() {
+            if (!currentImageElement) return false;
+            
+            const wrapper = document.getElementById('lightbox-wrapper');
+            const wrapperRect = wrapper.getBoundingClientRect();
+            
+            // For images, use natural dimensions
+            let imageWidth, imageHeight;
+            if (currentImageElement.naturalWidth) {
+                imageWidth = currentImageElement.naturalWidth;
+                imageHeight = currentImageElement.naturalHeight;
+            } else {
+                // Fallback for placeholder elements
+                const imageRect = currentImageElement.getBoundingClientRect();
+                imageWidth = imageRect.width / currentZoom;
+                imageHeight = imageRect.height / currentZoom;
+            }
+            
+            // Check if the scaled image is larger than the wrapper
+            const scaledWidth = imageWidth * currentZoom;
+            const scaledHeight = imageHeight * currentZoom;
+            
+            return scaledWidth > wrapperRect.width || scaledHeight > wrapperRect.height;
+        }
+
         function startDrag(e) {
-            if (currentZoom <= 1) return;
+            if (!needsPanning()) return;
             e.preventDefault();
+            e.stopPropagation(); // Prevent event bubbling
             isDragging = true;
             startX = e.clientX - translateX;
             startY = e.clientY - translateY;
@@ -732,8 +769,9 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
         }
 
         function startDragTouch(e) {
-            if (currentZoom <= 1) return;
+            if (!needsPanning()) return;
             e.preventDefault();
+            e.stopPropagation(); // Prevent event bubbling
             isDragging = true;
             const touch = e.touches[0];
             startX = touch.clientX - translateX;
@@ -742,8 +780,9 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
         }
 
         function drag(e) {
-            if (!isDragging || currentZoom <= 1) return;
+            if (!isDragging || !needsPanning()) return;
             e.preventDefault();
+            e.stopPropagation(); // Prevent event bubbling
             
             translateX = e.clientX - startX;
             translateY = e.clientY - startY;
@@ -754,8 +793,9 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
         }
 
         function dragTouch(e) {
-            if (!isDragging || currentZoom <= 1) return;
+            if (!isDragging || !needsPanning()) return;
             e.preventDefault();
+            e.stopPropagation(); // Prevent event bubbling
             
             const touch = e.touches[0];
             translateX = touch.clientX - startX;
@@ -766,7 +806,11 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
             updateImageTransform();
         }
 
-        function endDrag() {
+        function endDrag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent event bubbling to lightbox
+            }
             isDragging = false;
             if (currentImageElement) {
                 currentImageElement.classList.remove('dragging');
@@ -778,22 +822,45 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
             const wrapperRect = wrapper.getBoundingClientRect();
             const imageRect = currentImageElement.getBoundingClientRect();
             
-            // Calculate the scaled image dimensions
-            const scaledWidth = imageRect.width * currentZoom;
-            const scaledHeight = imageRect.height * currentZoom;
+            // Get the natural size of the image at current zoom
+            const imageNaturalWidth = currentImageElement.naturalWidth || imageRect.width / currentZoom;
+            const imageNaturalHeight = currentImageElement.naturalHeight || imageRect.height / currentZoom;
             
-            // Calculate maximum pan distance within the wrapper
-            const maxPanX = Math.max(0, (scaledWidth - wrapperRect.width) / 2);
-            const maxPanY = Math.max(0, (scaledHeight - wrapperRect.height) / 2);
+            const scaledWidth = imageNaturalWidth * currentZoom;
+            const scaledHeight = imageNaturalHeight * currentZoom;
             
-            // Constrain translation
-            translateX = Math.min(maxPanX, Math.max(-maxPanX, translateX));
-            translateY = Math.min(maxPanY, Math.max(-maxPanY, translateY));
+            // Calculate how much the image extends beyond the wrapper
+            const excessWidth = scaledWidth - wrapperRect.width;
+            const excessHeight = scaledHeight - wrapperRect.height;
+            
+            // Allow panning to see all parts of the image
+            if (excessWidth > 0) {
+                const maxPanX = excessWidth / 2;
+                translateX = Math.min(maxPanX, Math.max(-maxPanX, translateX));
+            } else {
+                translateX = 0; // Center if image fits horizontally
+            }
+            
+            if (excessHeight > 0) {
+                const maxPanY = excessHeight / 2;
+                translateY = Math.min(maxPanY, Math.max(-maxPanY, translateY));
+            } else {
+                translateY = 0; // Center if image fits vertically
+            }
         }
 
         function updateImageTransform() {
             if (currentImageElement) {
                 currentImageElement.style.transform = `scale(${currentZoom}) translate(${translateX / currentZoom}px, ${translateY / currentZoom}px)`;
+                
+                // Update cursor based on whether panning is needed
+                if (needsPanning()) {
+                    currentImageElement.classList.add('zoomed');
+                    currentImageElement.classList.remove('no-zoom');
+                } else {
+                    currentImageElement.classList.remove('zoomed');
+                    currentImageElement.classList.add('no-zoom');
+                }
             }
         }
 
@@ -832,8 +899,8 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
         }
 
         function closeLightbox(e) {
-            // Don't close if clicking on zoom controls or dragging
-            if (e && (e.target.closest('.zoom-controls') || isDragging)) {
+            // Don't close if clicking on zoom controls, dragging, or if event came from drag end
+            if (e && (e.target.closest('.zoom-controls') || isDragging || e.target === currentImageElement)) {
                 return;
             }
             
@@ -845,6 +912,7 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
             translateX = 0;
             translateY = 0;
             currentImageElement = null;
+            isDragging = false;
             
             // Restore body scrolling
             document.body.style.overflow = 'auto';
