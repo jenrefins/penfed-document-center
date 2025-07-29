@@ -221,17 +221,93 @@
             justify-content: center;
             align-items: center;
             cursor: zoom-out;
+            overflow: hidden;
         }
 
         .lightbox-overlay.active {
             display: flex;
         }
 
-        .lightbox-image {
-            max-width: 100%;
+        .lightbox-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .lightbox-image-wrapper {
+            position: relative;
+            max-width: 90%;
             max-height: 90%;
+            overflow: hidden;
             border-radius: 8px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            background: white;
+        }
+
+        .lightbox-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s ease;
+            cursor: grab;
+            user-select: none;
+            transform-origin: center center;
+        }
+
+        .lightbox-image.zoomed {
+            cursor: grab;
+        }
+
+        .lightbox-image.dragging {
+            cursor: grabbing;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 25px;
+            z-index: 1002;
+        }
+
+        .zoom-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .zoom-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .zoom-indicator {
+            color: white;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 12px;
+            border-radius: 15px;
+            min-width: 60px;
+            text-align: center;
         }
 
         .lightbox-close {
@@ -345,6 +421,19 @@
                 width: 100%;
                 max-width: 500px;
             }
+        }
+
+        /* Placeholder image styles */
+        .placeholder-img {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            color: #6c757d;
+            font-weight: 500;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -554,37 +643,260 @@ The flow supports both proactive and self-guided use cases with equal clarity. O
     </div>
 
     <!-- Lightbox Overlay -->
-    <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox(event)">
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-        <img class="lightbox-image" id="lightbox-image" src="" alt="">
+        <div class="lightbox-container">
+            <div class="lightbox-image-wrapper" id="lightbox-wrapper">
+                <img class="lightbox-image" id="lightbox-image" src="" alt="">
+            </div>
+            <div class="zoom-controls" id="zoom-controls">
+                <button class="zoom-btn" onclick="zoomOut(event)">−</button>
+                <div class="zoom-indicator" id="zoom-indicator">100%</div>
+                <button class="zoom-btn" onclick="zoomIn(event)">+</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        function openLightbox(img) {
+        let currentZoom = 1;
+        let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
+        let currentImageElement = null;
+
+        function openLightbox(element) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImage = document.getElementById('lightbox-image');
+            const lightboxWrapper = document.getElementById('lightbox-wrapper');
+            const zoomControls = document.getElementById('zoom-controls');
             
-            lightboxImage.src = img.src;
-            lightboxImage.alt = img.alt;
+            // Reset zoom and position
+            currentZoom = 1;
+            translateX = 0;
+            translateY = 0;
+            
+            // Handle both img elements and placeholder divs
+            if (element.tagName === 'IMG') {
+                lightboxImage.src = element.src;
+                lightboxImage.alt = element.alt;
+                lightboxImage.style.display = 'block';
+                currentImageElement = lightboxImage;
+            } else {
+                // For placeholder divs, create a placeholder in the lightbox
+                lightboxImage.style.display = 'none';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'placeholder-img';
+                placeholder.style.cssText = 'min-height: 300px; width: 100%; font-size: 1.2rem; cursor: grab; user-select: none; display: flex; align-items: center; justify-content: center;';
+                placeholder.textContent = element.textContent;
+                lightboxWrapper.innerHTML = '';
+                lightboxWrapper.appendChild(placeholder);
+                currentImageElement = placeholder;
+            }
+            
+            // Show zoom controls
+            zoomControls.style.display = 'flex';
+            
+            // Add event listeners for dragging
+            setupDragListeners();
+            
             lightbox.classList.add('active');
+            updateZoomIndicator();
             
             // Prevent body scrolling when lightbox is open
             document.body.style.overflow = 'hidden';
         }
 
-        function closeLightbox() {
+        function setupDragListeners() {
+            if (!currentImageElement) return;
+
+            // Mouse events
+            currentImageElement.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+
+            // Touch events for mobile
+            currentImageElement.addEventListener('touchstart', startDragTouch, { passive: false });
+            document.addEventListener('touchmove', dragTouch, { passive: false });
+            document.addEventListener('touchend', endDrag);
+
+            // Prevent context menu
+            currentImageElement.addEventListener('contextmenu', e => e.preventDefault());
+        }
+
+        function startDrag(e) {
+            if (currentZoom <= 1) return;
+            e.preventDefault();
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            currentImageElement.classList.add('dragging');
+        }
+
+        function startDragTouch(e) {
+            if (currentZoom <= 1) return;
+            e.preventDefault();
+            isDragging = true;
+            const touch = e.touches[0];
+            startX = touch.clientX - translateX;
+            startY = touch.clientY - translateY;
+            currentImageElement.classList.add('dragging');
+        }
+
+        function drag(e) {
+            if (!isDragging || currentZoom <= 1) return;
+            e.preventDefault();
+            
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            
+            // Constrain dragging to image bounds
+            constrainPan();
+            updateImageTransform();
+        }
+
+        function dragTouch(e) {
+            if (!isDragging || currentZoom <= 1) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            translateX = touch.clientX - startX;
+            translateY = touch.clientY - startY;
+            
+            // Constrain dragging to image bounds
+            constrainPan();
+            updateImageTransform();
+        }
+
+        function endDrag() {
+            isDragging = false;
+            if (currentImageElement) {
+                currentImageElement.classList.remove('dragging');
+            }
+        }
+
+        function constrainPan() {
+            const wrapper = document.getElementById('lightbox-wrapper');
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const imageRect = currentImageElement.getBoundingClientRect();
+            
+            // Calculate the scaled image dimensions
+            const scaledWidth = imageRect.width * currentZoom;
+            const scaledHeight = imageRect.height * currentZoom;
+            
+            // Calculate maximum pan distance within the wrapper
+            const maxPanX = Math.max(0, (scaledWidth - wrapperRect.width) / 2);
+            const maxPanY = Math.max(0, (scaledHeight - wrapperRect.height) / 2);
+            
+            // Constrain translation
+            translateX = Math.min(maxPanX, Math.max(-maxPanX, translateX));
+            translateY = Math.min(maxPanY, Math.max(-maxPanY, translateY));
+        }
+
+        function updateImageTransform() {
+            if (currentImageElement) {
+                currentImageElement.style.transform = `scale(${currentZoom}) translate(${translateX / currentZoom}px, ${translateY / currentZoom}px)`;
+            }
+        }
+
+        function zoomIn(e) {
+            e.stopPropagation();
+            if (currentZoom < 3) {
+                currentZoom = Math.min(3, currentZoom + 0.25);
+                updateImageTransform();
+                updateZoomIndicator();
+                
+                if (currentZoom > 1) {
+                    currentImageElement.classList.add('zoomed');
+                }
+            }
+        }
+
+        function zoomOut(e) {
+            e.stopPropagation();
+            if (currentZoom > 1) {
+                currentZoom = Math.max(1, currentZoom - 0.25);
+                
+                if (currentZoom === 1) {
+                    translateX = 0;
+                    translateY = 0;
+                    currentImageElement.classList.remove('zoomed');
+                }
+                
+                updateImageTransform();
+                updateZoomIndicator();
+            }
+        }
+
+        function updateZoomIndicator() {
+            const indicator = document.getElementById('zoom-indicator');
+            indicator.textContent = Math.round(currentZoom * 100) + '%';
+        }
+
+        function closeLightbox(e) {
+            // Don't close if clicking on zoom controls or dragging
+            if (e && (e.target.closest('.zoom-controls') || isDragging)) {
+                return;
+            }
+            
             const lightbox = document.getElementById('lightbox');
             lightbox.classList.remove('active');
+            
+            // Reset zoom and position
+            currentZoom = 1;
+            translateX = 0;
+            translateY = 0;
+            currentImageElement = null;
             
             // Restore body scrolling
             document.body.style.overflow = 'auto';
         }
+
+        // Mouse wheel zoom
+        document.getElementById('lightbox').addEventListener('wheel', function(e) {
+            if (!currentImageElement) return;
+            
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            const newZoom = Math.min(3, Math.max(1, currentZoom + delta));
+            
+            if (newZoom !== currentZoom) {
+                currentZoom = newZoom;
+                
+                if (currentZoom === 1) {
+                    translateX = 0;
+                    translateY = 0;
+                    currentImageElement.classList.remove('zoomed');
+                } else {
+                    currentImageElement.classList.add('zoomed');
+                }
+                
+                updateImageTransform();
+                updateZoomIndicator();
+            }
+        });
 
         // Close lightbox with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeLightbox();
             }
+        });
+
+        // Double-click to zoom
+        document.getElementById('lightbox').addEventListener('dblclick', function(e) {
+            if (!currentImageElement || e.target.closest('.zoom-controls')) return;
+            
+            if (currentZoom === 1) {
+                currentZoom = 2;
+                currentImageElement.classList.add('zoomed');
+            } else {
+                currentZoom = 1;
+                translateX = 0;
+                translateY = 0;
+                currentImageElement.classList.remove('zoomed');
+            }
+            
+            updateImageTransform();
+            updateZoomIndicator();
         });
     </script>
 </body>
